@@ -14,9 +14,9 @@ class Customer:
     def __repr__(self):
 
         return (
-            f"<Customer: {self.first_name} {self.last_name}, 
+            f"""<Customer: {self.first_name} {self.last_name}, 
             {self.email}, 
-            {self.password}>"
+            {self.password}>"""
         )
 
 
@@ -32,3 +32,11 @@ def get_customers_from_file(filepath):
 
     return customers
 
+
+def get_by_email(email):
+
+    return customers[email]
+
+
+
+customers = get_customers_from_file("customers.txt")
