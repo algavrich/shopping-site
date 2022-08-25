@@ -6,7 +6,7 @@ put melons in a shopping cart.
 Authors: Joel Burton, Christian Fernandez, Meggie Mahnken, Katie Byers.
 """
 
-from flask import Flask, render_template, redirect, flash
+from flask import Flask, render_template, redirect, flash, session
 import jinja2
 
 import melons
@@ -14,7 +14,7 @@ import melons
 app = Flask(__name__)
 
 # A secret key is needed to use Flask sessioning features
-app.secret_key = 'this-should-be-something-unguessable'
+app.secret_key = 'kjsrfhkajfhlsfj'
 
 # Normally, if you refer to an undefined variable in a Jinja template,
 # Jinja silently ignores this. This makes debugging difficult, so we'll
@@ -30,7 +30,7 @@ app.config['PRESERVE_CONTEXT_ON_EXCEPTION'] = True
 @app.route("/")
 def index():
     """Return homepage."""
-
+    
     return render_template("homepage.html")
 
 
@@ -78,7 +78,27 @@ def show_shopping_cart():
     # Make sure your function can also handle the case wherein no cart has
     # been added to the session
 
-    return render_template("cart.html")
+    cart = {}
+
+    if "cart" in session:
+        cart = session["cart"]
+    
+
+    total = 0
+    melons_in_cart = []
+
+    for melon_id, quantity in cart.items():
+        melon = melons.get_by_id(melon_id)
+        melons_in_cart.append(melon)
+
+        total += melon.price * quantity
+
+    total = f"${total:.2f}"
+        
+
+    return render_template("cart.html", 
+                            melons_in_cart=melons_in_cart, 
+                            total=total)
 
 
 @app.route("/add_to_cart/<melon_id>")
@@ -88,6 +108,14 @@ def add_to_cart(melon_id):
     When a melon is added to the cart, redirect browser to the shopping cart
     page and display a confirmation message: 'Melon successfully added to
     cart'."""
+
+    if "cart" not in session:
+        session["cart"] = {} 
+
+    session["cart"][melon_id] = session["cart"].get(melon_id, 0) + 1
+
+    flash("Melon added to cart!")
+
 
     # TODO: Finish shopping cart functionality
 
@@ -100,7 +128,7 @@ def add_to_cart(melon_id):
     # - flash a success message
     # - redirect the user to the cart page
 
-    return "Oops! This needs to be implemented!"
+    return redirect("/cart")
 
 
 @app.route("/login", methods=["GET"])
@@ -144,6 +172,11 @@ def checkout():
 
     flash("Sorry! Checkout will be implemented in a future version.")
     return redirect("/melons")
+
+
+
+
+
 
 
 if __name__ == "__main__":
